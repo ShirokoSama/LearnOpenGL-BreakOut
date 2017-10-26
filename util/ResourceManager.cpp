@@ -78,7 +78,7 @@ Shader ResourceManager::loadShaderFromFile(const GLchar *vShaderFile, const GLch
 }
 
 Texture2D ResourceManager::loadTextureFromFile(const GLchar *file, GLboolean alpha) {
-    Texture2D texture;
+    Texture2D texture = Texture2D();
     if (alpha) {
         texture.internal_format = GL_RGBA;
         texture.image_format = GL_RGBA;
