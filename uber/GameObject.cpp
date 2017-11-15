@@ -2,6 +2,7 @@
 // Created by dell on 2017/11/13.
 //
 
+#include <iostream>
 #include "GameObject.h"
 
 GameObject::GameObject()

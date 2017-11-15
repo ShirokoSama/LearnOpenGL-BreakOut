@@ -7,6 +7,8 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <vector>
+#include "GameLevel.h"
 
 enum GameState {
     GAME_ACTIVE,
@@ -19,6 +21,8 @@ public:
     GameState state;
     GLboolean keys[1024];
     GLuint width, height;
+    std::vector<GameLevel> Levels;
+    GLuint LevelIndex;
     Game(GLuint width, GLuint height);
     ~Game();
     void init();
@@ -26,6 +30,5 @@ public:
     void update(GLfloat dt);
     void render();
 };
-
 
 #endif //BREAKOUT_GAME_H
