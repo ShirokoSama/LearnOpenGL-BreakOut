@@ -8,6 +8,7 @@ set(SOURCE_FILES main.cpp glad.c uber/Game.cpp uber/Game.h util/Shader.cpp util/
         util/SpriteRenderer.cpp util/SpriteRenderer.h shader/sprite_fs.glsl shader/sprite_vs.glsl
         resource/awesomeface.png uber/GameObject.cpp uber/GameObject.h uber/GameLevel.cpp uber/GameLevel.h
         levels/one.lvl levels/two.lvl levels/three.lvl levels/four.lvl
-        resource/background.jpg resource/block.png resource/block_solid.png resource/paddle.png)
+        resource/background.jpg resource/block.png resource/block_solid.png resource/paddle.png
+        uber/BallObject.cpp uber/BallObject.h)
 add_executable(BreakOut ${SOURCE_FILES})
 target_link_libraries(BreakOut glfw3dll opengl32)
