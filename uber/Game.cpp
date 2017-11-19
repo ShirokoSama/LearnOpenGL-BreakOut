@@ -5,10 +5,12 @@
 #include "Game.h"
 #include "../util/ResourceManager.h"
 #include "BallObject.h"
+#include "../util/ParticleGenerator.h"
 
 SpriteRenderer *renderer;
 GameObject *Player;
 BallObject *Ball;
+ParticleGenerator *Particles;
 
 Game::Game(GLuint width, GLuint height): state(GAME_ACTIVE), keys(), width(width), height(height) {}
 
@@ -21,14 +23,15 @@ Game::~Game() {
 void Game::init() {
     // 加载着色器
     ResourceManager::loadShader("../shader/sprite_vs.glsl", "../shader/sprite_fs.glsl", nullptr, "sprite");
+    ResourceManager::loadShader("../shader/particle_vs.glsl", "../shader/particle_fs.glsl", nullptr, "particle");
+
     // 配置着色器
     glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(this->width),
                                       static_cast<GLfloat>(this->height), 0.0f, -1.0f, 1.0f);
     ResourceManager::getShader("sprite").use().setInteger("image", 0);
     ResourceManager::getShader("sprite").setMatrix4("projection", projection);
-    // 设置专用于渲染的控制
-    Shader shader = ResourceManager::getShader("sprite");
-    renderer = new SpriteRenderer(shader);
+    ResourceManager::getShader("particle").use().setInteger("sprite", 0);
+    ResourceManager::getShader("particle").setMatrix4("projection", projection);
 
     // Load textures
     ResourceManager::loadTexture("../resource/background.jpg", GL_FALSE, "background");
@@ -36,6 +39,13 @@ void Game::init() {
     ResourceManager::loadTexture("../resource/block.png", GL_FALSE, "block");
     ResourceManager::loadTexture("../resource/block_solid.png", GL_FALSE, "block_solid");
     ResourceManager::loadTexture("../resource/paddle.png", GL_TRUE, "paddle");
+    ResourceManager::loadTexture("../resource/particle.png", GL_TRUE, "particle");
+
+    // 设置专用于渲染的控制
+    Shader shader = ResourceManager::getShader("sprite");
+    renderer = new SpriteRenderer(shader);
+    Particles = new ParticleGenerator(
+            ResourceManager::getShader("particle"), ResourceManager::getTexture("particle"), 500);
 
     // Load levels
     GameLevel one;
@@ -52,6 +62,7 @@ void Game::init() {
     this->Levels.push_back(four);
     this->LevelIndex = 0;
 
+    // 挡板
     glm::vec2 playerPos(this->width / 2 - PLAYER_SIZE.x / 2, this->height - PLAYER_SIZE.y);
     Player = new GameObject(playerPos, PLAYER_SIZE, ResourceManager::getTexture("paddle"));
 
@@ -85,6 +96,7 @@ void Game::processInput(GLfloat dt) {
 void Game::update(GLfloat dt) {
     Ball->Move(dt, this->width);
     this->DoCollision();
+    Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2));
     if (Ball->Position.y >= this->height) {
         this->ResetLevel();
         this->ResetPlayer();
@@ -99,19 +111,20 @@ void Game::render() {
         // Draw level
         this->Levels[this->LevelIndex].Draw(*renderer);
         Player->draw(*renderer);
+        Particles->Draw();
         Ball->draw(*renderer);
     }
 }
 
 void Game::ResetLevel() {
     if (this->LevelIndex == 0)
-        this->Levels[0].Load("levels/one.lvl", this->width, this->height / 2);
+        this->Levels[0].Load("../levels/one.lvl", this->width, this->height / 2);
     else if (this->LevelIndex == 1)
-        this->Levels[1].Load("levels/two.lvl", this->width, this->height / 2);
+        this->Levels[1].Load("../levels/two.lvl", this->width, this->height / 2);
     else if (this->LevelIndex == 2)
-        this->Levels[2].Load("levels/three.lvl", this->width, this->height / 2);
+        this->Levels[2].Load("../levels/three.lvl", this->width, this->height / 2);
     else if (this->LevelIndex == 3)
-        this->Levels[3].Load("levels/four.lvl", this->width, this->height/ 2);
+        this->Levels[3].Load("../levels/four.lvl", this->width, this->height/ 2);
 }
 
 void Game::ResetPlayer() {
