@@ -1,10 +1,10 @@
 #version 330
-in TexCoords;
+in vec2 TexCoords;
 
 uniform sampler2D scene;
 uniform vec2 offset[9];
 uniform int edge_kernel[9];
-uniform int blur_kernel[9];
+uniform float blur_kernel[9];
 
 uniform bool chaos;
 uniform bool confuse;
@@ -15,7 +15,7 @@ void main() {
     vec3 samples[9];
     if (chaos || shake)
         for (int i = 0; i < 9; i++)
-            samples[i] = vec3(texture(scene, TexCoords + offset[i]));
+            samples[i] = vec3(texture(scene, TexCoords.st + offset[i]));
     if (chaos) {
         for (int i = 0; i < 9; i++)
             gl_FragColor += vec4(samples[i] * edge_kernel[i], 0.0);

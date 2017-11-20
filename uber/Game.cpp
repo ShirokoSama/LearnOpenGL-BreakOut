@@ -6,11 +6,15 @@
 #include "../util/ResourceManager.h"
 #include "BallObject.h"
 #include "ParticleGenerator.h"
+#include "PostProcessor.h"
 
 SpriteRenderer *renderer;
 GameObject *Player;
 BallObject *Ball;
 ParticleGenerator *Particles;
+PostProcessor *Effects;
+
+GLfloat ShakeTime = 0.0f;
 
 Game::Game(GLuint width, GLuint height): state(GAME_ACTIVE), keys(), width(width), height(height) {}
 
@@ -24,6 +28,7 @@ void Game::init() {
     // 加载着色器
     ResourceManager::loadShader("../shader/sprite_vs.glsl", "../shader/sprite_fs.glsl", nullptr, "sprite");
     ResourceManager::loadShader("../shader/particle_vs.glsl", "../shader/particle_fs.glsl", nullptr, "particle");
+    ResourceManager::loadShader("../shader/post_processing_vs.glsl", "../shader/post_processing_fs.glsl", nullptr, "postprocessing");
 
     // 配置着色器
     glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(this->width),
@@ -46,6 +51,7 @@ void Game::init() {
     renderer = new SpriteRenderer(shader);
     Particles = new ParticleGenerator(
             ResourceManager::getShader("particle"), ResourceManager::getTexture("particle"), 500);
+    Effects = new PostProcessor(ResourceManager::getShader("postprocessing"), this->width, this->height);
 
     // Load levels
     GameLevel one;
@@ -60,7 +66,7 @@ void Game::init() {
     this->Levels.push_back(two);
     this->Levels.push_back(three);
     this->Levels.push_back(four);
-    this->LevelIndex = 0;
+    this->LevelIndex = 1;
 
     // 挡板
     glm::vec2 playerPos(this->width / 2 - PLAYER_SIZE.x / 2, this->height - PLAYER_SIZE.y);
@@ -69,6 +75,10 @@ void Game::init() {
     // 小球
     glm::vec2 ballPos = playerPos + glm::vec2(Player->Size.x / 2 - BALL_RADIUS, -BALL_RADIUS * 2);
     Ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager::getTexture("face"));
+
+//    Effects->Chaos = GL_TRUE;
+//    Effects->Confuse = GL_TRUE;
+//    Effects->Shake = GL_TRUE;
 }
 
 void Game::processInput(GLfloat dt) {
@@ -105,18 +115,26 @@ void Game::update(GLfloat dt) {
         this->ResetLevel();
         this->ResetPlayer();
     }
+    if (ShakeTime > 0.0f) {
+        ShakeTime -= dt;
+        if (ShakeTime < 0.0f)
+            Effects->Shake = GL_FALSE;
+    }
 }
 
 void Game::render() {
     if(this->state == GAME_ACTIVE) {
-        // Draw background
-        Texture2D texture = ResourceManager::getTexture("background");
-        renderer->drawSprite(texture, glm::vec2(0, 0), glm::vec2(this->width, this->height), 0.0f);
-        // Draw level
-        this->Levels[this->LevelIndex].Draw(*renderer);
-        Player->draw(*renderer);
-        Particles->Draw();
-        Ball->draw(*renderer);
+        Effects->BeginRender();
+            // Draw background
+            Texture2D texture = ResourceManager::getTexture("background");
+            renderer->drawSprite(texture, glm::vec2(0, 0), glm::vec2(this->width, this->height), 0.0f);
+            // Draw level
+            this->Levels[this->LevelIndex].Draw(*renderer);
+            Player->draw(*renderer);
+            Particles->Draw();
+            Ball->draw(*renderer);
+        Effects->EndRender();
+        Effects->Render((GLfloat)glfwGetTime());
     }
 }
 
@@ -148,6 +166,10 @@ void Game::DoCollision() {
             if (std::get<0>(collision)) {
                 if (!obj.IsSolid)
                     obj.Destroyed = GL_TRUE;
+                else {
+                    ShakeTime = 0.05f;
+                    Effects->Shake = GL_TRUE;
+                }
                 Direction dir = std::get<1>(collision);
                 glm::vec2 offset = std::get<2>(collision);
                 if (dir == LEFT || dir == RIGHT) {

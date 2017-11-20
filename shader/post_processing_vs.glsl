@@ -16,7 +16,7 @@ void main() {
         TexCoords = vec2(vertex.z + sin(time) * strength, vertex.w + cos(time) * strength);
     }
     else if (confuse) {
-        TexCoords = (1.0 - vertex.z, 1.0 - vertex.w);
+        TexCoords = vec2(1.0 - vertex.z, 1.0 - vertex.w);
     }
     else {
         TexCoords = vertex.zw;
