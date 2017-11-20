@@ -175,18 +175,20 @@ void Game::DoCollision() {
                 if (dir == LEFT || dir == RIGHT) {
                     Ball->Velocity.x = -Ball->Velocity.x;
                     GLfloat movement = std::abs(offset.x);
+                    GLfloat penetration = Ball->Radius - movement;
                     if (dir == LEFT)
-                        Ball->Position.x -= movement;
+                        Ball->Position.x -= penetration;
                     else
-                        Ball->Position.x += movement;
+                        Ball->Position.x += penetration;
                 }
                 else {
                     Ball->Velocity.y = -Ball->Velocity.y;
                     GLfloat movement = std::abs(offset.y);
+                    GLfloat penetration = Ball->Radius - movement;
                     if (dir == UP)
-                        Ball->Position.y -= movement;
+                        Ball->Position.y -= penetration;
                     else
-                        Ball->Position.y += movement;
+                        Ball->Position.y += penetration;
                 }
             }
         }
@@ -211,6 +213,10 @@ bool CheckCollision(GameObject &one, GameObject &two) {
 }
 
 Collision CheckCollision(BallObject &one, GameObject &two) {
+//    if (one.Position.x >= two.Position.x && one.Position.x <= two.Position.x + two.Size.x
+//            && one.Position.y >= two.Position.y && one.Position.y <= two.Position.y + two.Size.y) {
+//        if (one.Velocity.x)
+//    }
     glm::vec2 half_aabb(two.Size.x / 2, two.Size.y / 2);
     glm::vec2 ball_center(one.Position + one.Radius);
     glm::vec2 aabb_center(two.Position + half_aabb);
