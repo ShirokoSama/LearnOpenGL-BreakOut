@@ -5,7 +5,7 @@
 #include "Game.h"
 #include "../util/ResourceManager.h"
 #include "BallObject.h"
-#include "../util/ParticleGenerator.h"
+#include "ParticleGenerator.h"
 
 SpriteRenderer *renderer;
 GameObject *Player;
@@ -100,7 +100,7 @@ void Game::processInput(GLfloat dt) {
 void Game::update(GLfloat dt) {
     Ball->Move(dt, this->width);
     this->DoCollision();
-    Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2));
+    Particles->Update(dt, *Ball, 5, glm::vec2(Ball->Radius / 2));
     if (Ball->Position.y >= this->height) {
         this->ResetLevel();
         this->ResetPlayer();

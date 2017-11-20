@@ -86,7 +86,7 @@ GLuint ParticleGenerator::firstUnusedParticle() {
 
 static default_random_engine e;
 static uniform_real_distribution<float> u(0.0f, 5.0f);
-static uniform_real_distribution<float> uc(0.5f, 1.0f);
+static uniform_real_distribution<float> uc(0.5f, 1.5f);
 void ParticleGenerator::respawnParticle(Particle &particle, GameObject &object, glm::vec2 offset) {
     GLfloat random = u(e);
     GLfloat rColor = uc(e);

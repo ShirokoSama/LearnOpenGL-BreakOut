@@ -9,9 +9,9 @@
 #include <glad/glad.h>
 #include <vector>
 
-#include "Texture2D.h"
-#include "Shader.h"
-#include "../uber/GameObject.h"
+#include "../util/Texture2D.h"
+#include "../util/Shader.h"
+#include "GameObject.h"
 
 struct Particle {
     glm::vec2 Position, Velocity;
