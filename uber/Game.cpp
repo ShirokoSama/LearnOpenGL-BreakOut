@@ -90,6 +90,10 @@ void Game::processInput(GLfloat dt) {
         }
         if (this->keys[GLFW_KEY_SPACE])
             Ball->Stuck = GL_FALSE;
+        if (this->keys[GLFW_KEY_R]) {
+            this->ResetLevel();
+            this->ResetPlayer();
+        }
     }
 }
 

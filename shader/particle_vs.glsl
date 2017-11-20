@@ -1,8 +1,8 @@
 #version 330
-layout(location = 0) attribute vec4 vertex;
+layout(location = 0) in vec4 vertex;
 
-varying vec2 TexCoords;
-varying vec4 ParticleColor;
+out vec2 TexCoords;
+out vec4 ParticleColor;
 
 uniform mat4 projection;
 uniform vec2 offset;
