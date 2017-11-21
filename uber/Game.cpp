@@ -5,7 +5,7 @@
 #include <random>
 #include <algorithm>
 #include <iostream>
-#include <time.h>
+#include <ctime>
 #include "Game.h"
 #include "../util/ResourceManager.h"
 #include "BallObject.h"
@@ -76,7 +76,7 @@ void Game::init() {
     this->Levels.push_back(two);
     this->Levels.push_back(three);
     this->Levels.push_back(four);
-    this->LevelIndex = 0;
+    this->LevelIndex = 1;
 
     // 挡板
     glm::vec2 playerPos(this->width / 2 - PLAYER_SIZE.x / 2, this->height - PLAYER_SIZE.y);
@@ -172,8 +172,7 @@ void Game::ResetPlayer() {
 
 
 void Game::SpawnPowerUps(GameObject &block) {
-    cout << time(0) <<endl;
-    static default_random_engine e((unsigned int)time(0));
+    static default_random_engine e((unsigned int)time(nullptr));
     static uniform_int_distribution<int> u(1, 20);
     int random = u(e);
     std::cout << random << std::endl;
@@ -341,18 +340,36 @@ bool CheckCollision(GameObject &one, GameObject &two) {
 }
 
 Collision CheckCollision(BallObject &one, GameObject &two) {
-//    if (one.Position.x >= two.Position.x && one.Position.x <= two.Position.x + two.Size.x
-//            && one.Position.y >= two.Position.y && one.Position.y <= two.Position.y + two.Size.y) {
-//        if (one.Velocity.x)
-//    }
     glm::vec2 half_aabb(two.Size.x / 2, two.Size.y / 2);
     glm::vec2 ball_center(one.Position + one.Radius);
     glm::vec2 aabb_center(two.Position + half_aabb);
+    if (ball_center.x >= aabb_center.x - half_aabb.x && ball_center.x <= aabb_center.x + half_aabb.x
+            && ball_center.y >= aabb_center.y - half_aabb.y && ball_center.y <= aabb_center.y + half_aabb.y) {
+        GLfloat x_distance, y_distance;
+        if (one.Velocity.x >= 0)
+            x_distance = ball_center.x - aabb_center.x + half_aabb.x;
+        else
+            x_distance = -(aabb_center.x + half_aabb.x - ball_center.x);
+        if (one.Velocity.y >= 0)
+            y_distance = ball_center.y - aabb_center.y + half_aabb.y;
+        else
+            y_distance = -(aabb_center.y + half_aabb.y - ball_center.y);
+        // 避免除0
+        GLfloat backtracking_time;
+        if (one.Velocity.x == 0)
+            backtracking_time = y_distance / one.Velocity.y;
+        else if (one.Velocity.y == 0)
+            backtracking_time = x_distance / one.Velocity.x;
+        else
+            backtracking_time = max(x_distance / one.Velocity.x, y_distance / one.Velocity.y);
+        one.Position -= one.Velocity * (backtracking_time * 0.0001f);
+        return CheckCollision(one, two);
+    }
     glm::vec2 difference = ball_center - aabb_center;
     glm::vec2 clamped = glm::clamp(difference, -half_aabb, half_aabb);
     glm::vec2 closest = aabb_center + clamped;
     difference = closest - ball_center;
-    return glm::length(difference) < one.Radius ? std::make_tuple(GL_TRUE, VectorDirection(difference), difference)
+    return glm::length(difference) <= one.Radius ? std::make_tuple(GL_TRUE, VectorDirection(difference), difference)
                                                 : std::make_tuple(GL_FALSE, UP, glm::vec2(0, 0));
 }
 
