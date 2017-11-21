@@ -15,7 +15,7 @@
 const glm::vec2 PLAYER_SIZE(100, 20);
 const GLfloat PLAYER_VELOCITY(500.0f);
 const GLfloat BALL_RADIUS(12.5f);
-const glm::vec2 INITIAL_BALL_VELOCITY(300.0f, -700.0f);
+const glm::vec2 INITIAL_BALL_VELOCITY(100.0f, -350.0f);
 
 enum Direction {
     UP,

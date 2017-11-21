@@ -6,17 +6,21 @@
 #include <algorithm>
 #include <iostream>
 #include <ctime>
+#include <irrKlang/irrKlang.h>
 #include "Game.h"
 #include "../util/ResourceManager.h"
 #include "BallObject.h"
 #include "ParticleGenerator.h"
 #include "PostProcessor.h"
 
+using namespace irrklang;
+
 SpriteRenderer *renderer;
 GameObject *Player;
 BallObject *Ball;
 ParticleGenerator *Particles;
 PostProcessor *Effects;
+ISoundEngine *SoundEngine;
 
 GLfloat ShakeTime = 0.0f;
 
@@ -26,6 +30,9 @@ Game::~Game() {
     delete renderer;
     delete Player;
     delete Ball;
+    delete Particles;
+    delete Effects;
+    delete SoundEngine;
 };
 
 void Game::init() {
@@ -76,7 +83,7 @@ void Game::init() {
     this->Levels.push_back(two);
     this->Levels.push_back(three);
     this->Levels.push_back(four);
-    this->LevelIndex = 1;
+    this->LevelIndex = 0;
 
     // 挡板
     glm::vec2 playerPos(this->width / 2 - PLAYER_SIZE.x / 2, this->height - PLAYER_SIZE.y);
@@ -86,6 +93,8 @@ void Game::init() {
     glm::vec2 ballPos = playerPos + glm::vec2(Player->Size.x / 2 - BALL_RADIUS, -BALL_RADIUS * 2);
     Ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager::getTexture("face"));
 
+    SoundEngine = createIrrKlangDevice();
+    SoundEngine->play2D("../resource/breakout.mp3", true);
 //    Effects->Chaos = GL_TRUE;
 //    Effects->Confuse = GL_TRUE;
 //    Effects->Shake = GL_TRUE;
@@ -175,7 +184,6 @@ void Game::SpawnPowerUps(GameObject &block) {
     static default_random_engine e((unsigned int)time(nullptr));
     static uniform_int_distribution<int> u(1, 20);
     int random = u(e);
-    std::cout << random << std::endl;
     if (random == 1)
         this->PowerUps.emplace_back(
                 PowerUp("speed", glm::vec3(0.5f, 0.5f, 1.0f), 0.0f, block.Position, ResourceManager::getTexture("powerup_speed"))
@@ -277,10 +285,12 @@ void Game::DoCollision() {
                 if (!obj.IsSolid) {
                     obj.Destroyed = GL_TRUE;
                     this->SpawnPowerUps(obj);
+                    SoundEngine->play2D("../resource/bleep.mp3", false);
                 }
                 else {
                     ShakeTime = 0.05f;
                     Effects->Shake = GL_TRUE;
+                    SoundEngine->play2D("../resource/solid.wav", false);
                 }
                 Direction dir = std::get<1>(collision);
                 glm::vec2 offset = std::get<2>(collision);
@@ -318,6 +328,7 @@ void Game::DoCollision() {
         Ball->Velocity.y = -std::abs(Ball->Velocity.y);
         Ball->Velocity = glm::normalize(Ball->Velocity) * velocity_length;
         Ball->Stuck = Ball->Sticky;
+        SoundEngine->play2D("../resource/bleep.wav", false);
     }
 
     for (PowerUp &item: this->PowerUps) {
@@ -328,6 +339,7 @@ void Game::DoCollision() {
                 item.Activated = GL_TRUE;
                 item.Destroyed = GL_TRUE;
                 ActivatePowerUp(item);
+                SoundEngine->play2D("../resource/powerup.wav", false);
             }
         }
     }
