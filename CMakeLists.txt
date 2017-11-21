@@ -10,6 +10,8 @@ set(SOURCE_FILES main.cpp glad.c uber/Game.cpp uber/Game.h util/Shader.cpp util/
         levels/one.lvl levels/two.lvl levels/three.lvl levels/four.lvl
         resource/background.jpg resource/block.png resource/block_solid.png resource/paddle.png
         uber/BallObject.cpp uber/BallObject.h uber/ParticleGenerator.cpp uber/ParticleGenerator.h
-        resource/particle.png uber/PostProcessor.cpp uber/PostProcessor.h)
+        resource/particle.png uber/PostProcessor.cpp uber/PostProcessor.h uber/PowerUp.h
+        resource/powerup_chaos.png resource/powerup_confuse.png resource/powerup_increase.png
+        resource/powerup_passthrough.png resource/powerup_speed.png resource/powerup_sticky.png)
 add_executable(BreakOut ${SOURCE_FILES})
 target_link_libraries(BreakOut glfw3dll opengl32)

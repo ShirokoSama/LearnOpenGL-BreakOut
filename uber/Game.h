@@ -10,6 +10,7 @@
 #include <vector>
 #include <tuple>
 #include "GameLevel.h"
+#include "PowerUp.h"
 
 const glm::vec2 PLAYER_SIZE(100, 20);
 const GLfloat PLAYER_VELOCITY(500.0f);
@@ -38,6 +39,8 @@ public:
     GLuint width, height;
     std::vector<GameLevel> Levels;
     GLuint LevelIndex;
+    std::vector<PowerUp> PowerUps;
+
     Game(GLuint width, GLuint height);
     ~Game();
     void init();
@@ -47,6 +50,8 @@ public:
     void DoCollision();
     void ResetLevel();
     void ResetPlayer();
+    void SpawnPowerUps(GameObject &block);
+    void UpdatePowerUps(GLfloat dt);
 };
 
 #endif //BREAKOUT_GAME_H

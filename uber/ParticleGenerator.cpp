@@ -5,6 +5,7 @@
 #include "ParticleGenerator.h"
 #include <random>
 #include <iostream>
+#include <ctime>
 
 using namespace std;
 
@@ -84,7 +85,7 @@ GLuint ParticleGenerator::firstUnusedParticle() {
     return 0;
 }
 
-static default_random_engine e;
+static default_random_engine e((unsigned int)time(0));
 static uniform_real_distribution<float> u(0.0f, 5.0f);
 static uniform_real_distribution<float> uc(0.5f, 1.5f);
 void ParticleGenerator::respawnParticle(Particle &particle, GameObject &object, glm::vec2 offset) {
