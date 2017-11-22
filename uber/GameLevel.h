@@ -16,7 +16,7 @@ public:
     GameLevel() = default;
     void Load(const GLchar *file, GLuint levelWidth, GLuint levelHeight);
     void Draw(SpriteRenderer &renderer);
-    GLboolean IsComplete();
+    bool IsComplete();
 private:
     void init(vector<vector<GLuint>> titleData, GLuint levelWidth, GLuint levelHeight);
 };

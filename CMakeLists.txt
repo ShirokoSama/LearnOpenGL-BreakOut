@@ -14,6 +14,10 @@ set(SOURCE_FILES main.cpp glad.c
         resource/particle.png uber/PostProcessor.cpp uber/PostProcessor.h uber/PowerUp.h
         resource/powerup_chaos.png resource/powerup_confuse.png resource/powerup_increase.png
         resource/powerup_passthrough.png resource/powerup_speed.png resource/powerup_sticky.png
-        resource/bleep.mp3 resource/bleep.wav resource/breakout.mp3 resource/powerup.wav resource/solid.wav)
+        resource/bleep.mp3 resource/bleep.wav resource/breakout.mp3 resource/powerup.wav resource/solid.wav
+        util/TextRenderer.cpp util/TextRenderer.h
+        shader/text_vs.glsl shader/text_fs.glsl
+        )
+link_libraries(freetype.lib)
 add_executable(BreakOut ${SOURCE_FILES})
 target_link_libraries(BreakOut glfw3dll opengl32 irrKlang)

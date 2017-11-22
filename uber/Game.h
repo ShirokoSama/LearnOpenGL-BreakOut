@@ -40,6 +40,8 @@ public:
     std::vector<GameLevel> Levels;
     GLuint LevelIndex;
     std::vector<PowerUp> PowerUps;
+    GLuint Lives;
+    GLboolean KeysProcessed[1024];
 
     Game(GLuint width, GLuint height);
     ~Game();

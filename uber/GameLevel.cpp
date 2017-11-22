@@ -39,8 +39,6 @@ void GameLevel::Draw(SpriteRenderer &renderer) {
     }
 }
 
-GLboolean GameLevel::IsComplete() {}
-
 void GameLevel::init(vector<vector<GLuint>> tileData, GLuint levelWidth, GLuint levelHeight) {
     GLuint height = tileData.size();
     GLuint width = tileData[0].size();
@@ -72,4 +70,12 @@ void GameLevel::init(vector<vector<GLuint>> tileData, GLuint levelWidth, GLuint 
             }
         }
     }
+}
+
+bool GameLevel::IsComplete() {
+    for (GameObject &obj: this->Bricks) {
+        if (!obj.IsSolid && !obj.Destroyed)
+            return false;
+    }
+    return true;
 }

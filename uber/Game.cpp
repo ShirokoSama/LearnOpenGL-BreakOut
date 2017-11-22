@@ -7,11 +7,13 @@
 #include <iostream>
 #include <ctime>
 #include <irrKlang/irrKlang.h>
+#include <sstream>
 #include "Game.h"
 #include "../util/ResourceManager.h"
 #include "BallObject.h"
 #include "ParticleGenerator.h"
 #include "PostProcessor.h"
+#include "../util/TextRenderer.h"
 
 using namespace irrklang;
 
@@ -21,6 +23,7 @@ BallObject *Ball;
 ParticleGenerator *Particles;
 PostProcessor *Effects;
 ISoundEngine *SoundEngine;
+TextRenderer *Text;
 
 GLfloat ShakeTime = 0.0f;
 
@@ -33,6 +36,7 @@ Game::~Game() {
     delete Particles;
     delete Effects;
     delete SoundEngine;
+    delete Text;
 };
 
 void Game::init() {
@@ -98,6 +102,9 @@ void Game::init() {
 //    Effects->Chaos = GL_TRUE;
 //    Effects->Confuse = GL_TRUE;
 //    Effects->Shake = GL_TRUE;
+    Text = new TextRenderer(this->width, this->height);
+    Text->Load("../resource/OCRAEXT.TTF", 24);
+    this->Lives = 3;
 }
 
 void Game::processInput(GLfloat dt) {
@@ -124,14 +131,48 @@ void Game::processInput(GLfloat dt) {
             this->ResetPlayer();
         }
     }
+    if (this->state == GAME_MENU) {
+        if (this->keys[GLFW_KEY_ENTER] && !this->KeysProcessed[GLFW_KEY_ENTER]) {
+            this->state = GAME_ACTIVE;
+            this->KeysProcessed[GLFW_KEY_ENTER] = GL_TRUE;
+        }
+        if (this->keys[GLFW_KEY_W] && !this->KeysProcessed[GLFW_KEY_W]) {
+            this->LevelIndex = (this->LevelIndex + 1) % 4;
+            this->KeysProcessed[GLFW_KEY_W] = GL_TRUE;
+        }
+        if (this->keys[GLFW_KEY_S] && !this->KeysProcessed[GLFW_KEY_S]) {
+            if (this->LevelIndex > 0)
+                --this->LevelIndex;
+            else
+                this->LevelIndex = 3;
+            this->KeysProcessed[GLFW_KEY_S] = GL_TRUE;
+        }
+    }
+    if (this->state == GAME_WIN) {
+        if (this->keys[GLFW_KEY_ENTER]) {
+            this->KeysProcessed[GLFW_KEY_ENTER] = GL_TRUE;
+            Effects->Chaos = GL_FALSE;
+            this->state = GAME_MENU;
+        }
+    }
 }
 
 void Game::update(GLfloat dt) {
+    if (this->state == GAME_ACTIVE && this->Levels[this->LevelIndex].IsComplete()) {
+        this->ResetLevel();
+        this->ResetPlayer();
+        Effects->Chaos = GL_TRUE;
+        this->state = GAME_WIN;
+    }
     Ball->Move(dt, this->width);
     this->DoCollision();
     Particles->Update(dt, *Ball, 5, glm::vec2(Ball->Radius / 2));
     if (Ball->Position.y >= this->height) {
-        this->ResetLevel();
+        this->Lives--;
+        if (this->Lives == 0) {
+            this->ResetLevel();
+            this->state = GAME_MENU;
+        }
         this->ResetPlayer();
     }
     if (ShakeTime > 0.0f) {
@@ -143,7 +184,7 @@ void Game::update(GLfloat dt) {
 }
 
 void Game::render() {
-    if(this->state == GAME_ACTIVE) {
+    if(this->state == GAME_ACTIVE || this->state == GAME_MENU) {
         Effects->BeginRender();
             // Draw background
             Texture2D texture = ResourceManager::getTexture("background");
@@ -159,6 +200,23 @@ void Game::render() {
             }
         Effects->EndRender();
         Effects->Render((GLfloat)glfwGetTime());
+
+        std::stringstream ss;
+        ss << this->Lives;
+        Text->RenderText("Lives:" + ss.str(), 5.0f, 5.0f, 1.0f);
+    }
+    if (this->state == GAME_MENU)
+    {
+        Text->RenderText("Press ENTER to start", 250.0f, height / 2, 1.0f);
+        Text->RenderText("Press W or S to select level", 245.0f, height / 2 + 20.0f, 0.75f);
+    }
+    if (this->state == GAME_WIN) {
+        Text->RenderText(
+                "You WON!!!", 320.0, height / 2 - 20.0f, 1.0, glm::vec3(0.0, 1.0, 0.0)
+        );
+        Text->RenderText(
+                "Press ENTER to retry or ESC to quit", 130.0, height / 2, 1.0, glm::vec3(1.0, 1.0, 0.0)
+        );
     }
 }
 
@@ -171,6 +229,7 @@ void Game::ResetLevel() {
         this->Levels[2].Load("../levels/three.lvl", this->width, this->height / 2);
     else if (this->LevelIndex == 3)
         this->Levels[3].Load("../levels/four.lvl", this->width, this->height/ 2);
+    this->Lives = 3;
 }
 
 void Game::ResetPlayer() {
