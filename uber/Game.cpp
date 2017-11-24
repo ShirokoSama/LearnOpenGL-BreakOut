@@ -433,7 +433,7 @@ Collision CheckCollision(BallObject &one, GameObject &two) {
             backtracking_time = x_distance / one.Velocity.x;
         else
             backtracking_time = max(x_distance / one.Velocity.x, y_distance / one.Velocity.y);
-        one.Position -= one.Velocity * (backtracking_time * 0.0001f);
+        one.Position -= one.Velocity * (backtracking_time + 0.0001f);
         return CheckCollision(one, two);
     }
     glm::vec2 difference = ball_center - aabb_center;
