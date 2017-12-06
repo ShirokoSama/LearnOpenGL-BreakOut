@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <tuple>
+#include <list>
 #include "GameLevel.h"
 #include "PowerUp.h"
 
@@ -39,7 +40,7 @@ public:
     GLuint width, height;
     std::vector<GameLevel> Levels;
     GLuint LevelIndex;
-    std::vector<PowerUp> PowerUps;
+    std::list<PowerUp> PowerUps;
     GLuint Lives;
     GLboolean KeysProcessed[1024];
 

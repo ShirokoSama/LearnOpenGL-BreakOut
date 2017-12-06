@@ -292,7 +292,7 @@ void ActivatePowerUp(PowerUp &powerUp) {
     }
 }
 
-bool isOtherPowerUpActivate(std::vector<PowerUp> &powerUps, const std::string &type) {
+bool isOtherPowerUpActivate(std::list<PowerUp> &powerUps, const std::string &type) {
     for (const PowerUp &powerUp: powerUps) {
         if (powerUp.Activated)
             if (powerUp.Type == type)
@@ -302,7 +302,8 @@ bool isOtherPowerUpActivate(std::vector<PowerUp> &powerUps, const std::string &t
 }
 
 void Game::UpdatePowerUps(GLfloat dt) {
-    for (PowerUp &powerUp: PowerUps) {
+    for (auto itr = this->PowerUps.begin(); itr != this->PowerUps.end(); itr++) {
+        PowerUp &powerUp = *itr;
         powerUp.Position += powerUp.Velocity * dt;
         if (powerUp.Activated) {
             powerUp.Duration -= dt;
@@ -324,6 +325,7 @@ void Game::UpdatePowerUps(GLfloat dt) {
                     if (!isOtherPowerUpActivate(this->PowerUps, powerUp.Type))
                         Effects->Chaos = GL_FALSE;
                 }
+                this->PowerUps.erase(itr);
             }
         }
     }
@@ -337,7 +339,8 @@ Collision CheckCollision(BallObject &one, GameObject &two);
 Direction VectorDirection(glm::vec2 target);
 
 void Game::DoCollision() {
-    for (GameObject &obj: this->Levels[this->LevelIndex].Bricks) {
+    for (GameObject* obj_p: this->Levels[this->LevelIndex].CollisionBroadPhase(*Ball)) {
+        GameObject& obj = *obj_p;
         if (!obj.Destroyed) {
             Collision collision = CheckCollision(*Ball, obj);
             if (std::get<0>(collision)) {
@@ -390,10 +393,14 @@ void Game::DoCollision() {
         SoundEngine->play2D("../resource/bleep.wav", false);
     }
 
-    for (PowerUp &item: this->PowerUps) {
+    for (auto itr = this->PowerUps.begin(); itr != this->PowerUps.end(); itr++) {
+        PowerUp &item = *itr;
         if (!item.Destroyed) {
-            if (item.Position.y > this->height)
+            if (item.Position.y > this->height) {
                 item.Destroyed = GL_TRUE;
+                if (!item.Activated)
+                    this->PowerUps.erase(itr);
+            }
             if (CheckCollision(item, *Player)) {
                 item.Activated = GL_TRUE;
                 item.Destroyed = GL_TRUE;

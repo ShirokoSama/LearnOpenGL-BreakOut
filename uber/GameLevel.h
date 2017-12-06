@@ -17,7 +17,12 @@ public:
     void Load(const GLchar *file, GLuint levelWidth, GLuint levelHeight);
     void Draw(SpriteRenderer &renderer);
     bool IsComplete();
+    vector<GameObject*> CollisionBroadPhase(GameObject &obj);
 private:
+    GLfloat grid_width = 0;
+    GLfloat grid_height = 0;
+    GLuint column_num = 0;
+    GLuint row_num = 0;
     void init(vector<vector<GLuint>> titleData, GLuint levelWidth, GLuint levelHeight);
 };
 

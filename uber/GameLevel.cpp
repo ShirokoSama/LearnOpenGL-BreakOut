@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <cmath>
 #include "GameLevel.h"
 #include "../util/ResourceManager.h"
 
@@ -40,16 +41,21 @@ void GameLevel::Draw(SpriteRenderer &renderer) {
 }
 
 void GameLevel::init(vector<vector<GLuint>> tileData, GLuint levelWidth, GLuint levelHeight) {
-    GLuint height = tileData.size();
-    GLuint width = tileData[0].size();
-    GLfloat brick_width = levelWidth / (GLfloat) width;
-    GLfloat brick_height = levelHeight / (GLfloat) height;
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            glm::vec2 pos(brick_width * j, brick_height * i);
-            glm::vec2 size(brick_width, brick_height);
+    row_num = tileData.size();
+    column_num = tileData[0].size();
+    grid_width = levelWidth / (GLfloat) column_num;
+    grid_height = levelHeight / (GLfloat) row_num;
+    for (int i = 0; i < row_num; i++) {
+        for (int j = 0; j < column_num; j++) {
+            glm::vec2 pos(grid_width * j, grid_height * i);
+            glm::vec2 size(grid_width, grid_height);
 
-            if (tileData[i][j] == 1) {
+            if (tileData[i][j] == 0) {
+                GameObject obj = GameObject();
+                obj.Destroyed = GL_TRUE;
+                this->Bricks.push_back(obj);
+            }
+            else if (tileData[i][j] == 1) {
                 GameObject obj(pos, size, ResourceManager::getTexture("block_solid"));
                 obj.IsSolid = GL_TRUE;
                 this->Bricks.push_back(obj);
@@ -64,7 +70,6 @@ void GameLevel::init(vector<vector<GLuint>> tileData, GLuint levelWidth, GLuint 
                     color = glm::vec3(0.8f, 0.8f, 0.4f);
                 else if (tileData[i][j] == 5)
                     color = glm::vec3(1.0f, 0.5f, 0.0f);
-
                 // 用emplace_back替代push_back，前者可以省去一次拷贝过程（？）
                 this->Bricks.emplace_back(GameObject(pos, size, ResourceManager::getTexture("block"), color));
             }
@@ -78,4 +83,18 @@ bool GameLevel::IsComplete() {
             return false;
     }
     return true;
+}
+
+vector<GameObject*> GameLevel::CollisionBroadPhase(GameObject &obj) {
+    auto x_start_index = (int)(obj.Position.x / grid_width);
+    auto x_end_index = (int)((obj.Position.x + obj.Size.x) / grid_width);
+    auto y_start_index = (int)(obj.Position.y / grid_height);
+    auto y_end_index = (int)((obj.Position.y + obj.Size.y) / grid_height);
+    vector<GameObject*> rslt;
+    for (int i = y_start_index; i <= y_end_index; i++) {
+        for (int j = x_start_index; j <= x_end_index; j++) {
+            rslt.push_back(&this->Bricks[i * column_num + j]);
+        }
+    }
+    return rslt;
 }
