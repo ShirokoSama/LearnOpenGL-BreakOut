@@ -398,8 +398,10 @@ void Game::DoCollision() {
         if (!item.Destroyed) {
             if (item.Position.y > this->height) {
                 item.Destroyed = GL_TRUE;
-                if (!item.Activated)
+                if (!item.Activated) {
                     this->PowerUps.erase(itr);
+                    break;
+                }
             }
             if (CheckCollision(item, *Player)) {
                 item.Activated = GL_TRUE;
