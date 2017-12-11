@@ -302,7 +302,7 @@ bool isOtherPowerUpActivate(std::list<PowerUp> &powerUps, const std::string &typ
 }
 
 void Game::UpdatePowerUps(GLfloat dt) {
-    for (auto itr = this->PowerUps.begin(); itr != this->PowerUps.end(); itr++) {
+    for (auto itr = this->PowerUps.begin(); itr != this->PowerUps.end();) {
         PowerUp &powerUp = *itr;
         powerUp.Position += powerUp.Velocity * dt;
         if (powerUp.Activated) {
@@ -325,9 +325,11 @@ void Game::UpdatePowerUps(GLfloat dt) {
                     if (!isOtherPowerUpActivate(this->PowerUps, powerUp.Type))
                         Effects->Chaos = GL_FALSE;
                 }
-                this->PowerUps.erase(itr);
+                this->PowerUps.erase(itr++);
+                continue;
             }
         }
+        itr++;
     }
     this->PowerUps.erase(std::remove_if(this->PowerUps.begin(), this->PowerUps.end(),
         [](const PowerUp &powerUp) { return !powerUp.Activated && powerUp.Destroyed; }
@@ -393,14 +395,14 @@ void Game::DoCollision() {
         SoundEngine->play2D("../resource/bleep.wav", false);
     }
 
-    for (auto itr = this->PowerUps.begin(); itr != this->PowerUps.end(); itr++) {
+    for (auto itr = this->PowerUps.begin(); itr != this->PowerUps.end();) {
         PowerUp &item = *itr;
         if (!item.Destroyed) {
             if (item.Position.y > this->height) {
                 item.Destroyed = GL_TRUE;
                 if (!item.Activated) {
-                    this->PowerUps.erase(itr);
-                    break;
+                    this->PowerUps.erase(itr++);
+                    continue;
                 }
             }
             if (CheckCollision(item, *Player)) {
@@ -410,7 +412,9 @@ void Game::DoCollision() {
                 SoundEngine->play2D("../resource/powerup.wav", false);
             }
         }
+        itr++;
     }
+
 }
 
 bool CheckCollision(GameObject &one, GameObject &two) {
